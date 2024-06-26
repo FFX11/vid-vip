@@ -1,7 +1,7 @@
 import { vidsrcBase } from "./common.js";
 import { load } from "cheerio";
 
-export const maxDuration = 5; // This function can run for a maximum of 5 seconds
+export const maxDuration = 15; // This function can run for a maximum of 5 seconds
 export const dynamic = 'force-dynamic';
 
 export async function getVidsrcSourcesId(tmdbId, seasonNumber, episodeNumber) {
