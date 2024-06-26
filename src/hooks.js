@@ -1,9 +1,7 @@
 import { vidsrcBase } from "./common.js";
 import { load } from "cheerio";
 
-export const config = {
-    maxDuration: 20,
-  };
+
 
 export async function getVidsrcSourcesId(tmdbId, seasonNumber, episodeNumber) {
     const type = seasonNumber && episodeNumber ? "hydraxtv" : "hydrax";
