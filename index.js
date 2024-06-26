@@ -1,6 +1,6 @@
 import express from "express";
 import { getVidsrcSourcesId} from "./src/hooks.js";
-
+export const maxDuration = 300;
 const app = express()
 const port = 3000;
 
