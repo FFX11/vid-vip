@@ -15,5 +15,10 @@
             }
         }
     ],
-    "installCommand": "npm install"
+    "installCommand": "npm install",
+    "functions": {
+        "getVidsrcSourcesId": {
+            "maxDuration": 30
+        }
+    }
 }
