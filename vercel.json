@@ -5,7 +5,7 @@
             "src": "index.js",
             "use": "@vercel/node",
             "functions": {
-            "app/server.js": {
+            "src/hook.js": {
             "maxDuration": 60
             }
          }
