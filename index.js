@@ -2,7 +2,7 @@ import express from "express";
 import { getVidsrcSourcesId} from "./src/hooks.js";
 
 export const config = {
-    maxDuration: 15,
+    maxDuration: 25,
   };
   
 const app = express()
