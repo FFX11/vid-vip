@@ -6,21 +6,17 @@
             "use": "@vercel/node"
         }
     ],
-
-    "functions": {
-    "src/hook.js": {
-      "maxDuration": 30 
-    },
-    "src/*.js": {
-      "maxDuration": 15 
-    }
-  },
     "routes": [
         {
             "src": "/(.*)",
             "dest": "index.js",
             "headers": {
                 "Access-Control-Allow-Origin": "*"
+            },
+            "functions": {
+            "src/hook.js": {
+            "maxDuration": 30 
+                }
             }
         }
     ],
