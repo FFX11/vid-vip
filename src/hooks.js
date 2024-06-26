@@ -28,9 +28,28 @@ export async function getVidsrcSourcesId(tmdbId, seasonNumber, episodeNumber) {
         const vpro = vproMatch ? vproMatch[1] : null;
         const vto = vtoMatch ? vtoMatch[1] : null;
 
-        return { vpro, vto };
+        // Fetch subtitles
+        const subtitles = await fetchSubtitles(tmdbId);
+
+        return { vpro, vto, subtitles };
     } catch (err) {
         console.error(err);
         return;
+    }
+}
+
+async function fetchSubtitles(imdbId) {
+    try {
+        const response = await fetch(`${vidsrcBase}/subs/${imdbId}.txt`);
+        
+        if (!response.ok) {
+            throw new Error(`Subtitle fetch failed with status ${response.status}`);
+        }
+
+        const subtitles = await response.json();
+        return subtitles;
+    } catch (error) {
+        console.error('Error fetching subtitles:', error.message);
+        return []; // Return empty array on error
     }
 }

@@ -18,19 +18,33 @@ app.get('/:tmdbId', async(req, res) => {
     const season = req.query.s;
     const episode = req.query.e;
 
-    const sources = await getVidsrcSourcesId(id, season, episode);
+    const { vpro, vto, subtitles } = await getVidsrcSourcesId(id, season, episode);
 
-    if (!sources) {
-        res.status(404).send({
-            status: 404,
-            return: "Oops media not available"
-        })
-        return;
-    };
+    try {
+        const { vpro, vto, subtitles } = await getVidsrcSourcesId(id, season, episode);
 
-    res.status(200).json({
-        source: sources
-    })
+        if (!vpro && !vto) {
+            res.status(404).send({
+                status: 404,
+                message: "Oops media not available"
+            });
+            return;
+        }
+
+        // Return sources and subtitles as JSON
+        res.status(200).json({
+            sources: {
+                vpro: vpro,
+                vto: vto
+            },
+            subtitles: subtitles
+        });
+    } catch (error) {
+        console.error('Error fetching sources and subtitles:', error);
+        res.status(500).json({
+            error: 'Internal server error'
+        });
+    }
 })
 
 app.listen(port, () => {
