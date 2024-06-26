@@ -18,7 +18,6 @@ app.get('/:tmdbId', async(req, res) => {
     const season = req.query.s;
     const episode = req.query.e;
 
-    const { vpro, vto, subtitles } = await getVidsrcSourcesId(id, season, episode);
 
     try {
         const { vpro, vto, subtitles } = await getVidsrcSourcesId(id, season, episode);
