@@ -15,7 +15,7 @@
             },
             "functions": {
             "src/hook.js": {
-            "maxDuration": 30 
+            "maxDuration": 10 
                 }
             }
         }
