@@ -46,7 +46,7 @@ app.get('/:tmdbId', async(req, res) => {
         });
     }
 })
-export const maxDuration = 300;
+
 app.listen(port, () => {
     console.log(`Example app listening on port http://localhost:${port}`)
 })
