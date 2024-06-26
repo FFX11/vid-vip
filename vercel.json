@@ -1,9 +1,4 @@
 {
-    "functions": {
-    "pages/api/**/*": {
-      "maxDuration": 15 
-    }
-  },
     "version": 2,
     "builds": [
         {
@@ -20,5 +15,9 @@
             }
         }
     ],
+    "functions": {
+    "pages/api/**/*": {
+      "maxDuration": 15 
+    },
     "installCommand": "npm install"
 }
