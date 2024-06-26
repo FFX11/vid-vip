@@ -6,6 +6,15 @@
             "use": "@vercel/node"
         }
     ],
+
+    "functions": {
+    "api/your-file-path.js": {
+      "maxDuration": 30 
+    },
+    "api/example/*.js": {
+      "maxDuration": 15 
+    }
+  },
     "routes": [
         {
             "src": "/(.*)",
@@ -14,12 +23,6 @@
                 "Access-Control-Allow-Origin": "*"
             }
         }
-        
     ],
-    "functions": {
-    "src/**/*.js": {
-      "maxDuration": 30 
-    }
-    },
     "installCommand": "npm install"
 }
