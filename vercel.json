@@ -5,8 +5,10 @@
             "src": "index.js",
             "use": "@vercel/node",
             "functions": {
-            "middleware/**/*.js": { "maxDuration": 30 }
-      }
+            "app/server.js": {
+            "maxDuration": 60
+            }
+         }
         }
     ],
     "routes": [
