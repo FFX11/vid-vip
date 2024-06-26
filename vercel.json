@@ -15,9 +15,11 @@
             }
         }
     ],
+
     "functions": {
     "pages/api/**/*": {
-      "maxDuration": 15 
-    },
+      "maxDuration": 15
+    }
+  },
     "installCommand": "npm install"
 }
