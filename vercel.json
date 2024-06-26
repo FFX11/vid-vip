@@ -8,10 +8,10 @@
     ],
 
     "functions": {
-    "api/your-file-path.js": {
+    "src/hook.js": {
       "maxDuration": 30 
     },
-    "api/example/*.js": {
+    "src/*.js": {
       "maxDuration": 15 
     }
   },
