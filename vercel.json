@@ -1,4 +1,9 @@
 {
+    "functions": {
+    "pages/api/**/*": {
+      "maxDuration": 25 
+    }
+  },
     "version": 2,
     "builds": [
         {
