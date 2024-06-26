@@ -1,8 +1,4 @@
 {
-    "functions": {
-    "src/*.js": {
-      "maxDuration": 15
-    },
     "version": 2,
     "builds": [
         {
@@ -20,4 +16,4 @@
         }
     ],
     "installCommand": "npm install"
-}}
+}
