@@ -3,7 +3,7 @@ import { load } from "cheerio";
 
 
 export const config = {
-    maxDuration: 15,
+    maxDuration: 25,
   };
 
 export async function getVidsrcSourcesId(tmdbId, seasonNumber, episodeNumber) {
