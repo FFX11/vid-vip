@@ -40,6 +40,7 @@ export async function getVidsrcSourcesId(tmdbId, seasonNumber, episodeNumber) {
 
 async function fetchSubtitles(imdbId) {
     const host = 'vidsrc.vip';
+    const referer = 'https://vidsrc.vip'
     const url = `${vidsrcBase}/subs/${imdbId}.txt`;
 
     console.log(`Fetching subtitles from URL: ${url}`);
@@ -47,7 +48,8 @@ async function fetchSubtitles(imdbId) {
     try {
         const response = await fetch(url, {
             headers: {
-                'Host': host
+                'Host': host,
+                'Referer': referer
             }
         });
         
