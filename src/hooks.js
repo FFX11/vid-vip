@@ -39,8 +39,17 @@ export async function getVidsrcSourcesId(tmdbId, seasonNumber, episodeNumber) {
 }
 
 async function fetchSubtitles(imdbId) {
+    const host = 'vidsrc.vip';
+    const url = `${vidsrcBase}/subs/${imdbId}.txt`;
+
+    console.log(`Fetching subtitles from URL: ${url}`);
+
     try {
-        const response = await fetch(`${vidsrcBase}/subs/${imdbId}.txt`);
+        const response = await fetch(url, {
+            headers: {
+                'Host': host
+            }
+        });
         
         if (!response.ok) {
             throw new Error(`Subtitle fetch failed with status ${response.status}`);
@@ -50,6 +59,6 @@ async function fetchSubtitles(imdbId) {
         return subtitles;
     } catch (error) {
         console.error('Error fetching subtitles:', error.message);
-        return []; // Return empty array on error
+        return [];
     }
 }
