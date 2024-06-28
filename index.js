@@ -20,7 +20,9 @@ app.get('/:tmdbId', async(req, res) => {
 
 
     try {
-        const { vpro, vto, subtitles } = await getVidsrcSourcesId(id, season, episode);
+        const { vpro, vto, subtitles, 
+            title, year, imdbId: extractedImdbId, 
+            seasonNum, episodeNum, coverImage, coverTitle   } = await getVidsrcSourcesId(id, season, episode);
 
         if (!vpro && !vto) {
             res.status(404).send({
@@ -34,7 +36,8 @@ app.get('/:tmdbId', async(req, res) => {
         res.status(200).json({
             sources: {
                 vpro: vpro,
-                vto: vto
+                vto: vto,
+                coverImage, coverTitle
             },
             subtitles: subtitles
         });

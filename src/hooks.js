@@ -25,13 +25,31 @@ export async function getVidsrcSourcesId(tmdbId, seasonNumber, episodeNumber) {
         const vproMatch = scriptContent.match(/const vpro = "(.*?)";/);
         const vtoMatch = scriptContent.match(/const vto = "(.*?)";/);
 
+        const titleMatch = scriptContent.match(/const title = "(.*?)";/);
+        const yearMatch = scriptContent.match(/const year = "(.*?)";/);
+        const imdbIdMatch = scriptContent.match(/const imdbId = "(.*?)";/);
+        const seasonMatch = scriptContent.match(/const season = "(.*?)";/);
+        const episodeMatch = scriptContent.match(/const episode = "(.*?)";/);
+
         const vpro = vproMatch ? vproMatch[1] : null;
         const vto = vtoMatch ? vtoMatch[1] : null;
+        const title = titleMatch ? titleMatch[1] : null;
+        const year = yearMatch ? yearMatch[1] : null;
+        const extractedImdbId = imdbIdMatch ? imdbIdMatch[1] : null;
+        const seasonNum = seasonMatch ? seasonMatch[1] : null;
+        const episodeNum = episodeMatch ? episodeMatch[1] : null;
+
+
+        // Extract additional elements
+        const coverImageStyle = $('.cover-image').attr('style');
+        const imageMatch = coverImageStyle ? coverImageStyle.match(/url\("([^"]+)"\)/) : null;
+        const coverImage = imageMatch ? imageMatch[1] : null;
+        const coverTitle = $('.title-text').text().trim();
 
         // Fetch subtitles
-        const subtitles = await fetchSubtitles(tmdbId, type, seasonNumber, episodeNumber);
+        const subtitles = await fetchSubtitles(extractedImdbId, type, seasonNumber, episodeNumber);
 
-        return { vpro, vto, subtitles };
+        return { vpro, vto, subtitles, title, year, imdbId: extractedImdbId, seasonNum, episodeNum, coverImage, coverTitle};
     } catch (err) {
         console.error(err);
         return;
@@ -43,23 +61,11 @@ async function fetchSubtitles(imdbId, type,seasonNumber,episodeNumber) {
     const referer = 'https://vidsrc.vip'
     let urlImdb;
 
-    if (!isNaN(imdbId) && !seasonNumber && !episodeNumber) {
-        imdbId = await fetchTmdbInfo(imdbId);
-       
-    }
-
-    // Check if the imdbId is numeric and both seasonNumber and episodeNumber are provided
-    if (!isNaN(imdbId) && seasonNumber && episodeNumber) {
-        imdbId = await fetchTmdbInfoForTv(imdbId, seasonNumber, episodeNumber);
-        
-    }
-
     if (type === 'hydraxtv') {
         urlImdb = `${vidsrcBase}/subs/${imdbId}-${seasonNumber}-${episodeNumber}.txt`;
     } else if (type === 'hydrax') {
         urlImdb = `${vidsrcBase}/subs/${imdbId}.txt`;
     }
-
 
     try {
         const response = await fetch(urlImdb, {
@@ -78,57 +84,5 @@ async function fetchSubtitles(imdbId, type,seasonNumber,episodeNumber) {
     } catch (error) {
         console.error('Error fetching subtitles:', error.message);
         return [];
-    }
-}
-
-async function fetchTmdbInfo(imdbId) {
-    // Check if imdbId starts with "tt"
-    if (imdbId.startsWith("tt")) {
-        console.log("IMDB ID starts with 'tt', exiting.");
-        return; // Exit the function early
-    }
-
-    const urlImdb = `https://api.themoviedb.org/3/movie/${imdbId}/external_ids?api_key=1865f43a0549ca50d341dd9ab8b29f49`;
-    try {
-        const response = await fetch(urlImdb);
-
-        if (!response.ok) {
-            throw new Error(`TMDb fetch failed with status ${response.status}`);
-        }
-
-        const tmdb = await response.json();
-
-        return tmdb.imdb_id
-
-    } catch (error) {
-        console.error('Error fetching TMDb data:', error.message);
-        // Handle the error appropriately
-    }
-}
-
-async function fetchTmdbInfoForTv(imdbId) {
-    // Check if imdbId starts with "tt"
-    if (imdbId.startsWith("tt")) {
-        console.log("IMDB ID starts with 'tt', exiting.");
-        return; // Exit the function early
-    }
-
-    const urlImdb = `https://api.themoviedb.org/3/tv/${imdbId}/external_ids?api_key=1865f43a0549ca50d341dd9ab8b29f49`;
-    try {
-        const response = await fetch(urlImdb);
-
-        if (!response.ok) {
-            throw new Error(`TMDb fetch failed with status ${response.status}`);
-        }
-
-        const tmdb = await response.json();
-        console.log('TMDb data:', tmdb);
-
-        return tmdb.imdb_id
-        // Your code to handle the TMDb data goes here
-
-    } catch (error) {
-        console.error('Error fetching TMDb data:', error.message);
-        // Handle the error appropriately
     }
 }
