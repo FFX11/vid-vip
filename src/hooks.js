@@ -29,7 +29,7 @@ export async function getVidsrcSourcesId(tmdbId, seasonNumber, episodeNumber) {
         const vto = vtoMatch ? vtoMatch[1] : null;
 
         // Fetch subtitles
-        const subtitles = await fetchSubtitles(tmdbId);
+        const subtitles = await fetchSubtitles(tmdbId, type, seasonNumber, episodeNumber);
 
         return { vpro, vto, subtitles };
     } catch (err) {
@@ -38,15 +38,31 @@ export async function getVidsrcSourcesId(tmdbId, seasonNumber, episodeNumber) {
     }
 }
 
-async function fetchSubtitles(imdbId) {
+async function fetchSubtitles(imdbId, type,seasonNumber,episodeNumber) {
     const host = 'vidsrc.vip';
     const referer = 'https://vidsrc.vip'
-    const url = `${vidsrcBase}/subs/${imdbId}.txt`;
+    let urlImdb;
 
-    console.log(`Fetching subtitles from URL: ${url}`);
+    if (!isNaN(imdbId) && !seasonNumber && !episodeNumber) {
+        imdbId = await fetchTmdbInfo(imdbId);
+       
+    }
+
+    // Check if the imdbId is numeric and both seasonNumber and episodeNumber are provided
+    if (!isNaN(imdbId) && seasonNumber && episodeNumber) {
+        imdbId = await fetchTmdbInfoForTv(imdbId, seasonNumber, episodeNumber);
+        
+    }
+
+    if (type === 'hydraxtv') {
+        urlImdb = `${vidsrcBase}/subs/${imdbId}-${seasonNumber}-${episodeNumber}.txt`;
+    } else if (type === 'hydrax') {
+        urlImdb = `${vidsrcBase}/subs/${imdbId}.txt`;
+    }
+
 
     try {
-        const response = await fetch(url, {
+        const response = await fetch(urlImdb, {
             headers: {
                 'Host': host,
                 'Referer': referer
@@ -62,5 +78,57 @@ async function fetchSubtitles(imdbId) {
     } catch (error) {
         console.error('Error fetching subtitles:', error.message);
         return [];
+    }
+}
+
+async function fetchTmdbInfo(imdbId) {
+    // Check if imdbId starts with "tt"
+    if (imdbId.startsWith("tt")) {
+        console.log("IMDB ID starts with 'tt', exiting.");
+        return; // Exit the function early
+    }
+
+    const urlImdb = `https://api.themoviedb.org/3/movie/${imdbId}/external_ids?api_key=1865f43a0549ca50d341dd9ab8b29f49`;
+    try {
+        const response = await fetch(urlImdb);
+
+        if (!response.ok) {
+            throw new Error(`TMDb fetch failed with status ${response.status}`);
+        }
+
+        const tmdb = await response.json();
+
+        return tmdb.imdb_id
+
+    } catch (error) {
+        console.error('Error fetching TMDb data:', error.message);
+        // Handle the error appropriately
+    }
+}
+
+async function fetchTmdbInfoForTv(imdbId) {
+    // Check if imdbId starts with "tt"
+    if (imdbId.startsWith("tt")) {
+        console.log("IMDB ID starts with 'tt', exiting.");
+        return; // Exit the function early
+    }
+
+    const urlImdb = `https://api.themoviedb.org/3/tv/${imdbId}/external_ids?api_key=1865f43a0549ca50d341dd9ab8b29f49`;
+    try {
+        const response = await fetch(urlImdb);
+
+        if (!response.ok) {
+            throw new Error(`TMDb fetch failed with status ${response.status}`);
+        }
+
+        const tmdb = await response.json();
+        console.log('TMDb data:', tmdb);
+
+        return tmdb.imdb_id
+        // Your code to handle the TMDb data goes here
+
+    } catch (error) {
+        console.error('Error fetching TMDb data:', error.message);
+        // Handle the error appropriately
     }
 }
