@@ -1,7 +1,7 @@
 import { load } from 'cheerio';
 
 const soaperBase = "https://soaper.tv";
-const PROXY_URL = "https://m3u8-proxy-corsv3.vercel.app/cors?url=";
+const PROXY_URL = "https://m3u8-proxy-cors-phi-brown.vercel.app/cors?url=";
 const headers = {
     "Referer": "https://soaper.tv",
     "Origin": "https://soaper.tv",
@@ -11,12 +11,11 @@ const headers = {
 export async function getSoaperSourcesId(tmdbId, seasonNumber = null, episodeNumber = null) {
     const type = seasonNumber && episodeNumber ? "show" : "movie";
     const searchUrl = `${soaperBase}/search.html`;
+    const encodedHeaders = encodeURIComponent(JSON.stringify(headers));
 
     try {
         // Fetch search results page for the movie or show title
-        const searchResult = await fetch(`${searchUrl}?keyword=${tmdbId}`, {
-            headers: { 'Referer': soaperBase }
-        });
+        const searchResult = await fetch(`${PROXY_URL}${encodeURIComponent(`${searchUrl}?keyword=${tmdbId}`)}&headers=${encodedHeaders}`);
         const searchHtml = await searchResult.text();
         const searchPage$ = load(searchHtml);
 
@@ -34,8 +33,9 @@ export async function getSoaperSourcesId(tmdbId, seasonNumber = null, episodeNum
 
         if (!showLink) throw new Error("Content not found on Soaper");
 
+        // Navigate to episode link if it's a show
         if (type === "show") {
-            const showPage = await fetch(`${soaperBase}${showLink}`);
+            const showPage = await fetch(`${PROXY_URL}${encodeURIComponent(`${soaperBase}${showLink}`)}&headers=${encodedHeaders}`);
             const showHtml = await showPage.text();
             const showPage$ = load(showHtml);
 
@@ -49,9 +49,7 @@ export async function getSoaperSourcesId(tmdbId, seasonNumber = null, episodeNum
         }
 
         // Access the content page to retrieve streaming info
-        const contentPage = await fetch(`${soaperBase}${showLink}`, {
-            headers: { 'Referer': soaperBase }
-        });
+        const contentPage = await fetch(`${PROXY_URL}${encodeURIComponent(`${soaperBase}${showLink}`)}&headers=${encodedHeaders}`);
         const contentHtml = await contentPage.text();
         const contentPage$ = load(contentHtml);
 
@@ -64,10 +62,9 @@ export async function getSoaperSourcesId(tmdbId, seasonNumber = null, episodeNum
         formData.append("server", "0");
 
         const infoEndpoint = type === "show" ? "/home/index/getEInfoAjax" : "/home/index/getMInfoAjax";
-        const streamResponse = await fetch(`${soaperBase}${infoEndpoint}`, {
+        const streamResponse = await fetch(`${PROXY_URL}${encodeURIComponent(`${soaperBase}${infoEndpoint}`)}&headers=${encodedHeaders}`, {
             method: "POST",
-            body: formData,
-            headers: { 'Referer': `${soaperBase}${showLink}` }
+            body: formData
         });
 
         const streamData = await streamResponse.json();
@@ -85,12 +82,11 @@ export async function getSoaperSourcesId(tmdbId, seasonNumber = null, episodeNum
         });
 
         // Build the stream result with the proxy URL
-        const proxyHeaders = encodeURIComponent(JSON.stringify(headers));
         return {
             stream: [
                 {
                     id: "primary",
-                    playlist: `${PROXY_URL}${encodeURIComponent(`${soaperBase}/${streamData.val}`)}&headers=${proxyHeaders}`,
+                    playlist: `${PROXY_URL}${encodeURIComponent(`${soaperBase}/${streamData.val}`)}&headers=${encodedHeaders}`,
                     type: "hls",
                     proxyDepth: 2,
                     captions
@@ -98,7 +94,7 @@ export async function getSoaperSourcesId(tmdbId, seasonNumber = null, episodeNum
                 ...streamData.val_bak ? [
                     {
                         id: "backup",
-                        playlist: `${PROXY_URL}${encodeURIComponent(`${soaperBase}/${streamData.val_bak}`)}&headers=${proxyHeaders}`,
+                        playlist: `${PROXY_URL}${encodeURIComponent(`${soaperBase}/${streamData.val_bak}`)}&headers=${encodedHeaders}`,
                         type: "hls",
                         proxyDepth: 2,
                         captions
