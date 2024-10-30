@@ -1,30 +1,30 @@
 import { load } from 'cheerio';
 
 const soaperBase = "https://soaper.tv";
-const PROXY_URL = "https://m3u8-proxy-cors-phi-brown.vercel.app/cors?url=";
-const headers = {
-    "Referer": "https://soaper.tv",
-    "Origin": "https://soaper.tv",
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
-};
 
 export async function getSoaperSourcesId(tmdbId, seasonNumber = null, episodeNumber = null) {
     const type = seasonNumber && episodeNumber ? "show" : "movie";
     const searchUrl = `${soaperBase}/search.html`;
-    const encodedHeaders = encodeURIComponent(JSON.stringify(headers));
 
     try {
         // Fetch search results page for the movie or show title
-        const searchResult = await fetch(`${PROXY_URL}${encodeURIComponent(`${searchUrl}?keyword=${tmdbId}`)}&headers=${encodedHeaders}`);
+        const searchResult = await fetch(`${searchUrl}?keyword=${tmdbId}`, {
+            headers: {
+                'Referer': soaperBase,
+            }
+        });
         const searchHtml = await searchResult.text();
         const searchPage$ = load(searchHtml);
 
         // Navigate to the "Related Movies" section
-        const relatedMoviesSection = searchPage$("h4:contains('Titles includes keyword')").next();
+        const relatedMoviesSection = searchPage$("h4:contains('Titles includes keyword')").next(); // Select sibling elements
         let showLink;
 
         relatedMoviesSection.find("a").each((_, el) => {
+            const titleText = searchPage$(el).text().trim();
             const href = searchPage$(el).attr("href");
+
+            // Match title with tmdbId and retrieve href
             if (href) {
                 showLink = href;
                 return false; // Stop once the correct link is found
@@ -35,7 +35,7 @@ export async function getSoaperSourcesId(tmdbId, seasonNumber = null, episodeNum
 
         // Navigate to episode link if it's a show
         if (type === "show") {
-            const showPage = await fetch(`${PROXY_URL}${encodeURIComponent(`${soaperBase}${showLink}`)}&headers=${encodedHeaders}`);
+            const showPage = await fetch(`${soaperBase}${showLink}`);
             const showHtml = await showPage.text();
             const showPage$ = load(showHtml);
 
@@ -49,10 +49,13 @@ export async function getSoaperSourcesId(tmdbId, seasonNumber = null, episodeNum
         }
 
         // Access the content page to retrieve streaming info
-        const contentPage = await fetch(`${PROXY_URL}${encodeURIComponent(`${soaperBase}${showLink}`)}&headers=${encodedHeaders}`);
+        const contentPage = await fetch(`${soaperBase}${showLink}`, {
+            headers: { 'Referer': soaperBase }
+        });
         const contentHtml = await contentPage.text();
         const contentPage$ = load(contentHtml);
 
+        // Extract pass for streaming
         const pass = contentPage$("#hId").attr("value");
         if (!pass) throw new Error("Pass value not found for content");
 
@@ -62,9 +65,12 @@ export async function getSoaperSourcesId(tmdbId, seasonNumber = null, episodeNum
         formData.append("server", "0");
 
         const infoEndpoint = type === "show" ? "/home/index/getEInfoAjax" : "/home/index/getMInfoAjax";
-        const streamResponse = await fetch(`${PROXY_URL}${encodeURIComponent(`${soaperBase}${infoEndpoint}`)}&headers=${encodedHeaders}`, {
+        const streamResponse = await fetch(`${soaperBase}${infoEndpoint}`, {
             method: "POST",
-            body: formData
+            body: formData,
+            headers: {
+                'Referer': `${soaperBase}${showLink}`
+            }
         });
 
         const streamData = await streamResponse.json();
@@ -81,12 +87,12 @@ export async function getSoaperSourcesId(tmdbId, seasonNumber = null, episodeNum
             };
         });
 
-        // Build the stream result with the proxy URL
+        // Build the stream result
         return {
             stream: [
                 {
                     id: "primary",
-                    playlist: `${PROXY_URL}${encodeURIComponent(`${soaperBase}/${streamData.val}`)}&headers=${encodedHeaders}`,
+                    playlist: `${soaperBase}/${streamData.val}`,
                     type: "hls",
                     proxyDepth: 2,
                     captions
@@ -94,7 +100,7 @@ export async function getSoaperSourcesId(tmdbId, seasonNumber = null, episodeNum
                 ...streamData.val_bak ? [
                     {
                         id: "backup",
-                        playlist: `${PROXY_URL}${encodeURIComponent(`${soaperBase}/${streamData.val_bak}`)}&headers=${encodedHeaders}`,
+                        playlist: `${soaperBase}/${streamData.val_bak}`,
                         type: "hls",
                         proxyDepth: 2,
                         captions
