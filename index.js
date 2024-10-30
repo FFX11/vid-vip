@@ -1,5 +1,5 @@
 import express from "express";
-import { getVidsrcSourcesId} from "./src/hooks.js";
+import { getSoaperSourcesId} from "./src/hooks.js";
 
 const app = express()
 const port = 3000;
@@ -20,11 +20,9 @@ app.get('/:tmdbId', async(req, res) => {
 
 
     try {
-        const { vpro, vto, subtitles, 
-            title, year, imdbId: extractedImdbId, 
-            seasonNum, episodeNum, coverImage, coverTitle   } = await getVidsrcSourcesId(id, season, episode);
+        const result = await getSoaperSourcesId(id, season, episode);
 
-        if (!vpro && !vto) {
+        if (!result) {
             res.status(404).send({
                 status: 404,
                 message: "Oops media not available"
@@ -35,11 +33,9 @@ app.get('/:tmdbId', async(req, res) => {
         // Return sources and subtitles as JSON
         res.status(200).json({
             sources: {
-                vpro: vpro,
-                vto: vto,
-                coverImage, coverTitle
+                result
             },
-            subtitles: subtitles
+            //subtitles: subtitles
         });
     } catch (error) {
         console.error('Error fetching sources and subtitles:', error);

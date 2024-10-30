@@ -1,1 +1,1 @@
-export const vidplayBase = 'https://vidplay.online';
+export const vidplayBase = 'https://soaper.tv';
